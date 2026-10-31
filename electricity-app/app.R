@@ -10,19 +10,9 @@ ui <- page_sidebar(
   sidebar = sidebar(
     selectInput(
       "region",
-      "Regions",
+      "Region",
       choices = regions,
-      selected = "Sub-Saharan Africa",
-      multiple = TRUE
-    ),
-    sliderInput(
-      "years",
-      "Years",
-      min = min(access$year),
-      max = max(access$year),
-      value = range(access$year),
-      step = 1,
-      sep = ""
+      selected = "Sub-Saharan Africa"
     )
   ),
   card(
@@ -32,19 +22,12 @@ ui <- page_sidebar(
 )
 
 server <- function(input, output, session) {
-  output$heading <- renderText({
-    req(input$region)
-    paste(paste(input$region, collapse = ", "), "compared with the world")
-  })
+  output$heading <- renderText(paste(input$region, "compared with the world"))
 
   output$trend <- renderPlot(
     {
-      req(input$region)
-      in_range <- access[
-        access$year >= input$years[1] & access$year <= input$years[2],
-      ]
-      world <- in_range[in_range$area == "World", ]
-      cols <- hcl.colors(length(input$region), "Dark 3")
+      region <- access[access$area == input$region, ]
+      world <- access[access$area == "World", ]
       plot(
         world$year,
         world$access,
@@ -58,17 +41,13 @@ server <- function(input, output, session) {
         las = 1,
         bty = "n"
       )
-      for (i in seq_along(input$region)) {
-        region <- in_range[in_range$area == input$region[i], ]
-        lines(region$year, region$access, lwd = 3, col = cols[i])
-      }
-      n <- length(cols)
+      lines(region$year, region$access, lwd = 3, col = "#2a78d6")
       legend(
         "bottomright",
         legend = c(input$region, "World"),
-        col = c(cols, "#52514e"),
-        lty = c(rep(1, n), 2),
-        lwd = c(rep(3, n), 2),
+        col = c("#2a78d6", "#52514e"),
+        lty = c(1, 2),
+        lwd = c(3, 2),
         bty = "n"
       )
     },
